@@ -33,19 +33,19 @@ public class BudgetController {
     private BudgetService budgetService;
 
     @GetMapping
-    @RolesAllowed(Roles.User)
+    @RolesAllowed(Roles.USER)
     public List<Budget> getAllBudgets() {
         return budgetService.getAllBudgets();
     }
 
     @GetMapping("/{id}")
-    @RolesAllowed(Roles.User)
+    @RolesAllowed(Roles.USER)
     public Optional<Budget> getBudgetById(@PathVariable Long id) {
         return budgetService.getBudgetById(id);
     }
 
     @PostMapping
-    @RolesAllowed(Roles.User)
+    @RolesAllowed(Roles.USER)
     public Budget createBudget(Authentication auth, @RequestBody BudgetDTO budget) {
         Jwt jwt = (Jwt) auth.getPrincipal();
         String username = jwt.getClaim("preferred_username");
@@ -53,13 +53,13 @@ public class BudgetController {
     }
 
     @PutMapping("/{id}")
-    @RolesAllowed(Roles.User)
+    @RolesAllowed(Roles.USER)
     public Budget updateBudget(@PathVariable Long id, @RequestBody Budget budget) {
         return budgetService.updateBudget(id, budget);
     }
 
     @DeleteMapping("/{id}")
-    @RolesAllowed(Roles.User)
+    @RolesAllowed(Roles.USER)
     public Optional<Budget> deleteBudget(@PathVariable Long id) {
         return budgetService.deleteBudget(id);
     }

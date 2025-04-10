@@ -33,19 +33,19 @@ public class TransactionController {
     private TransactionService transactionService;
 
     @GetMapping
-    @RolesAllowed(Roles.User)
+    @RolesAllowed(Roles.USER)
     public List<Transaction> getAllTransaction() {
         return transactionService.getAllTransactions();
     }
 
     @GetMapping("/{id}")
-    @RolesAllowed(Roles.User)
+    @RolesAllowed(Roles.USER)
     public Optional<Transaction> getTransactionById(@PathVariable Long id) {
         return transactionService.getTransactionById(id);
     }
 
     @PostMapping
-    @RolesAllowed(Roles.User)
+    @RolesAllowed(Roles.USER)
     public Transaction createTransaction(Authentication auth, @RequestBody TransactionDTO transaction) {
         Jwt jwt = (Jwt) auth.getPrincipal();
         String username = jwt.getClaim("preferred_username");
@@ -53,7 +53,7 @@ public class TransactionController {
     }
 
     @PutMapping("/{id}")
-    @RolesAllowed(Roles.User)
+    @RolesAllowed(Roles.USER)
     public Transaction updateTransaction(Authentication auth, @PathVariable Long id, @RequestBody Transaction transaction) {
         Jwt jwt = (Jwt) auth.getPrincipal();
         String username = jwt.getClaim("preferred_username");
@@ -61,7 +61,7 @@ public class TransactionController {
     }
 
     @DeleteMapping("/{id}")
-    @RolesAllowed(Roles.User)
+    @RolesAllowed(Roles.USER)
     public Optional<Transaction> deleteTransaction(@PathVariable Long id) {
         return transactionService.deleteTransaction(id);
     }

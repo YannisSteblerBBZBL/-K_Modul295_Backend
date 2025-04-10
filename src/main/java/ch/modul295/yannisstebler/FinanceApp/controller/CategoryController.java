@@ -30,31 +30,31 @@ public class CategoryController {
     private CategoryService categoryService;
 
     @GetMapping
-    @RolesAllowed(Roles.User)
+    @RolesAllowed(Roles.USER)
     public List<Category> getAllCategories() {
         return categoryService.getAllCategories();
     }
 
     @GetMapping("/{id}")
-    @RolesAllowed(Roles.User)
+    @RolesAllowed(Roles.USER)
     public Optional<Category> getCategoryById(@PathVariable Long id) {
         return categoryService.getCategoryById(id);
     }
 
     @PostMapping
-    @RolesAllowed(Roles.User)
+    @RolesAllowed(Roles.USER)
     public Category createCategory(@RequestBody Category category) {
         return categoryService.createCategory(category);
     }
 
     @PutMapping("/{id}")
-    @RolesAllowed(Roles.User)
+    @RolesAllowed(Roles.USER)
     public Category updateCategory(@PathVariable Long id, @RequestBody Category category) {
         return categoryService.updateCategory(id, category);
     }
 
     @DeleteMapping("/{id}")
-    @RolesAllowed(Roles.User)
+    @RolesAllowed(Roles.USER)
     public Optional<Category> deleteCategory(@PathVariable Long id) {
         return categoryService.deleteCategory(id);
     }

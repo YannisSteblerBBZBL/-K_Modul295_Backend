@@ -31,31 +31,31 @@ public class UserController {
     private UserService userService;
 
     @GetMapping
-    @RolesAllowed(Roles.Admin)
+    @RolesAllowed(Roles.ADMIN)
     public List<User> getAllUsers() {
         return userService.getAllUsers();
     }
 
     @GetMapping("/{id}")
-    @RolesAllowed(Roles.Admin)
+    @RolesAllowed(Roles.ADMIN)
     public Optional<User> getUserById(@PathVariable Long id) {
         return userService.getUserById(id);
     }
 
     @PostMapping
-    @RolesAllowed(Roles.User)
+    @RolesAllowed(Roles.USER)
     public ResponseEntity<User> createUser(@RequestBody User user) {
         return userService.createUser(user);
     }
 
     @PutMapping("/{id}")
-    @RolesAllowed(Roles.User)
+    @RolesAllowed(Roles.USER)
     public User updateUser(@PathVariable Long id, @RequestBody User user) {
         return userService.updateUser(id, user);
     }
 
     @DeleteMapping("/{id}")
-    @RolesAllowed(Roles.User)
+    @RolesAllowed(Roles.USER)
     public Optional<User> deleteUser(@PathVariable Long id) {
         return userService.deleteUser(id);
     }
