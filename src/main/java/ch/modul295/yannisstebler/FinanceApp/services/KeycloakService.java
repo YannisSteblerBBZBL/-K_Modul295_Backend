@@ -22,12 +22,15 @@ public class KeycloakService {
     @Value("${keycloak.realm}")
     private String realm;
 
+    @Value("${keycloak.clientLongId}")
+    private String clientLongId;
+
     public String createKeycloakUser(String username, String password, String role) {
         try {
             // Get realm
             RealmResource realmResource = keycloak.realm(realm);
             UsersResource usersResource = realmResource.users();
-            ClientResource clientResource = realmResource.clients().get("466dc5d7-368d-4e29-9668-a4abf7460d98");
+            ClientResource clientResource = realmResource.clients().get(clientLongId);
            
             // Create user representation
             UserRepresentation user = new UserRepresentation();
@@ -47,8 +50,6 @@ public class KeycloakService {
             usersResource.get(userId).resetPassword(credential);
 
             // Assign role
-            /* RoleRepresentation roleRepresentation = realmResource.roles().get(role).toRepresentation();
-            usersResource.get(userId).roles().realmLevel().add(Collections.singletonList(roleRepresentation)); */
             RoleRepresentation roleRepresentation = clientResource.roles().get(role).toRepresentation();
             usersResource.get(userId).roles().clientLevel(clientResource.toRepresentation().getId()).add(Collections.singletonList(roleRepresentation));
 
