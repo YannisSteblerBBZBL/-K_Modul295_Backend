@@ -1,9 +1,11 @@
-package ch.modul295.yannisstebler.FinanceApp.services;
+package ch.modul295.yannisstebler.financeapp.services;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.resource.ClientResource;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
@@ -26,7 +28,8 @@ public class KeycloakService {
             // Get realm
             RealmResource realmResource = keycloak.realm(realm);
             UsersResource usersResource = realmResource.users();
-
+            ClientResource clientResource = realmResource.clients().get("466dc5d7-368d-4e29-9668-a4abf7460d98");
+           
             // Create user representation
             UserRepresentation user = new UserRepresentation();
             user.setUsername(username);
@@ -45,10 +48,14 @@ public class KeycloakService {
             usersResource.get(userId).resetPassword(credential);
 
             // Assign role
-            RoleRepresentation roleRepresentation = realmResource.roles().get(role).toRepresentation();
-            usersResource.get(userId).roles().realmLevel().add(Collections.singletonList(roleRepresentation));
+            /* RoleRepresentation roleRepresentation = realmResource.roles().get(role).toRepresentation();
+            usersResource.get(userId).roles().realmLevel().add(Collections.singletonList(roleRepresentation)); */
+            RoleRepresentation roleRepresentation = clientResource.roles().get(role).toRepresentation();
+            usersResource.get(userId).roles().clientLevel(clientResource.toRepresentation().getId()).add(Collections.singletonList(roleRepresentation));
 
             // Retrieve and return the created user
+            System.out.println("User created with ID: " + userId);
+
             return userId;
         } catch (Exception e) {
             e.printStackTrace();
@@ -57,17 +64,24 @@ public class KeycloakService {
     }
 
     public String getUserIdByUsername(String username) {
-        try {
-            RealmResource realmResource = keycloak.realm(realm);
-            List<UserRepresentation> users = realmResource.users().search(username, true);
-            if (users == null || users.isEmpty()) {
-                throw new RuntimeException("User not found");
-            }
-            String userId = users.getFirst().getId();
-            return userId;
-        } catch (Exception e) {
-            throw new RuntimeException("Error retrieving user ID", e);
+        RealmResource realmResource = keycloak.realm(realm);
+        UsersResource usersResource = realmResource.users();
+        
+        List<UserRepresentation> users = usersResource.search(username, true);
+        
+        if (users == null || users.isEmpty()) {
+            System.err.println("User search returned no results for username: " + username);
+            throw new RuntimeException("User not found");
         }
+        
+        // Logge die erhaltenen Benutzer zur Überprüfung
+        System.out.println("Found users: " + users.stream().map(UserRepresentation::getUsername).collect(Collectors.joining(", ")));
+        
+        String userId = users.get(0).getId();
+
+        System.out.println("User ID: " + userId);
+
+        return userId;
     }
 
     public boolean deleteKeycloakUser(String username) {

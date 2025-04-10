@@ -36,12 +36,10 @@ public class UserService {
 
         String keycloakUserId = keycloakService.createKeycloakUser(user.getUsername(), user.getPassword(), "ROLE_user");
         
-        System.out.println("Keycloak user ID: " + keycloakUserId);
-
         if (keycloakUserId == null) {
-            throw new RuntimeException("Keycloak user creation failed");
+            return ResponseEntity.status(500).body(null);
         }
-        
+  
         user.setKeycloakID(keycloakUserId);
         
         User savedUser = userRepository.save(user);
