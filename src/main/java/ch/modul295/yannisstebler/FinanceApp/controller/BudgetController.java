@@ -28,69 +28,101 @@ import jakarta.annotation.security.RolesAllowed;
 @SecurityRequirement(name = "bearerAuth")
 @Validated
 public class BudgetController {
-    
+
     @Autowired
     private BudgetService budgetService;
+
+    // Helper method to extract username from JWT token
+    private String getUsernameFromAuth(Authentication auth) {
+        Jwt jwt = (Jwt) auth.getPrincipal();
+        return jwt.getClaim("preferred_username");
+    }
 
     @GetMapping
     @RolesAllowed(Roles.USER)
     public List<Budget> getAllBudgets(Authentication auth) {
-        Jwt jwt = (Jwt) auth.getPrincipal();
-        String username = jwt.getClaim("preferred_username");
 
-        List<Budget> returnedBudgets = budgetService.getAllBudgets().stream()
+        String username = getUsernameFromAuth(auth);
+
+        // Check if the user is an admin
+        if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals(Roles.ADMIN))) {
+            // Admin can access all budgets
+            return budgetService.getAllBudgets();
+        }
+
+        // Normal users can only access their own budgets
+        return budgetService.getAllBudgets().stream()
                 .filter(budget -> budget.getKeycloak_username().equals(username))
                 .toList();
-
-        return returnedBudgets;
     }
 
     @GetMapping("/{id}")
     @RolesAllowed(Roles.USER)
     public Optional<Budget> getBudgetById(Authentication auth, @PathVariable Long id) {
-        Jwt jwt = (Jwt) auth.getPrincipal();
-        String username = jwt.getClaim("preferred_username");
 
+        String username = getUsernameFromAuth(auth);
         Optional<Budget> returnedBudget = budgetService.getBudgetById(id);
-        if (returnedBudget.isPresent()) {
-            Budget budget = returnedBudget.get();
-            if (!budget.getKeycloak_username().equals(username)) {
-                return Optional.empty();
-            }
+
+        // Check if the user is an admin
+        if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals(Roles.ADMIN))) {
+            // Admin can access any budget
+            return returnedBudget;
         }
 
-        return returnedBudget;
+        // Normal users can only access their own budget
+        if (returnedBudget.isPresent() && returnedBudget.get().getKeycloak_username().equals(username)) {
+            return returnedBudget;
+        }
+
+        return Optional.empty();
     }
 
     @PostMapping
     @RolesAllowed(Roles.USER)
     public Budget createBudget(Authentication auth, @RequestBody BudgetDTO budget) {
-        Jwt jwt = (Jwt) auth.getPrincipal();
-        String username = jwt.getClaim("preferred_username");
+        String username = getUsernameFromAuth(auth);
         return budgetService.createBudget(username, budget);
     }
 
     @PutMapping("/{id}")
     @RolesAllowed(Roles.USER)
     public Budget updateBudget(Authentication auth, @PathVariable Long id, @RequestBody BudgetDTO budget) {
-        Jwt jwt = (Jwt) auth.getPrincipal();
-        String username = jwt.getClaim("preferred_username");
+
+        String username = getUsernameFromAuth(auth);
         Optional<Budget> returnedBudget = budgetService.getBudgetById(id);
-        if (!returnedBudget.get().getKeycloak_username().equals(username)) {
-            return null;
+
+        // Check if the user is an admin
+        if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals(Roles.ADMIN))) {
+            // Admin can update any budget
+            return budgetService.updateBudget(id, budget);
         }
-        return budgetService.updateBudget(id, budget);
+
+        // Normal users can only update their own budget
+        if (returnedBudget.isPresent() && returnedBudget.get().getKeycloak_username().equals(username)) {
+            return budgetService.updateBudget(id, budget);
+        }
+
+        return null;
     }
 
     @DeleteMapping("/{id}")
     @RolesAllowed(Roles.USER)
     public Optional<Budget> deleteBudget(Authentication auth, @PathVariable Long id) {
-        Jwt jwt = (Jwt) auth.getPrincipal();
-        String username = jwt.getClaim("preferred_username");
+
+        String username = getUsernameFromAuth(auth);
         Optional<Budget> returnedBudget = budgetService.getBudgetById(id);
-        if (!returnedBudget.get().getKeycloak_username().equals(username)) {
-            return null;
+
+        // Check if the user is an admin
+        if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals(Roles.ADMIN))) {
+            // Admin can delete any budget
+            return budgetService.deleteBudget(id);
         }
-        return budgetService.deleteBudget(id);
+
+        // Normal users can only delete their own budget
+        if (returnedBudget.isPresent() && returnedBudget.get().getKeycloak_username().equals(username)) {
+            return budgetService.deleteBudget(id);
+        }
+
+        return Optional.empty();
     }
 }

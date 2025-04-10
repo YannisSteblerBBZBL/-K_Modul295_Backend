@@ -28,41 +28,86 @@ import jakarta.annotation.security.RolesAllowed;
 @SecurityRequirement(name = "bearerAuth")
 @Validated
 public class TransactionController {
-    
+
     @Autowired
     private TransactionService transactionService;
 
+    // Helper method to extract username from JWT token
+    private String getUsernameFromAuth(Authentication auth) {
+        Jwt jwt = (Jwt) auth.getPrincipal();
+        return jwt.getClaim("preferred_username");
+    }
+
     @GetMapping
     @RolesAllowed(Roles.USER)
-    public List<Transaction> getAllTransaction() {
-        return transactionService.getAllTransactions();
+    public List<Transaction> getAllTransactions(Authentication auth) {
+
+        String username = getUsernameFromAuth(auth);
+
+        // Check if the user is an admin
+        if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals(Roles.ADMIN))) {
+            // Admin can access all transactions
+            return transactionService.getAllTransactions();
+        }
+
+        // Normal users can only access their own transactions
+        return transactionService.getAllTransactions().stream()
+                .filter(transaction -> transaction.getKeycloak_username().equals(username))
+                .toList();
     }
 
     @GetMapping("/{id}")
     @RolesAllowed(Roles.USER)
-    public Optional<Transaction> getTransactionById(@PathVariable Long id) {
-        return transactionService.getTransactionById(id);
+    public Optional<Transaction> getTransactionById(Authentication auth, @PathVariable Long id) {
+
+        String username = getUsernameFromAuth(auth);
+        Optional<Transaction> returnedTransaction = transactionService.getTransactionById(id);
+
+        // Check if the user is an admin
+        if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals(Roles.ADMIN))) {
+            // Admin can access any transaction
+            return returnedTransaction;
+        }
+
+        // Normal users can only access their own transaction
+        if (returnedTransaction.isPresent() && returnedTransaction.get().getKeycloak_username().equals(username)) {
+            return returnedTransaction;
+        }
+
+        return Optional.empty();
     }
 
     @PostMapping
     @RolesAllowed(Roles.USER)
     public Transaction createTransaction(Authentication auth, @RequestBody TransactionDTO transaction) {
-        Jwt jwt = (Jwt) auth.getPrincipal();
-        String username = jwt.getClaim("preferred_username");
+        String username = getUsernameFromAuth(auth);
         return transactionService.createTransaction(username, transaction);
     }
 
     @PutMapping("/{id}")
     @RolesAllowed(Roles.USER)
     public Transaction updateTransaction(Authentication auth, @PathVariable Long id, @RequestBody Transaction transaction) {
-        Jwt jwt = (Jwt) auth.getPrincipal();
-        String username = jwt.getClaim("preferred_username");
+        String username = getUsernameFromAuth(auth);
         return transactionService.updateTransaction(username, id, transaction);
     }
 
     @DeleteMapping("/{id}")
     @RolesAllowed(Roles.USER)
-    public Optional<Transaction> deleteTransaction(@PathVariable Long id) {
-        return transactionService.deleteTransaction(id);
+    public Optional<Transaction> deleteTransaction(Authentication auth, @PathVariable Long id) {
+        String username = getUsernameFromAuth(auth);
+        Optional<Transaction> returnedTransaction = transactionService.getTransactionById(id);
+
+        // Check if the user is an admin
+        if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals(Roles.ADMIN))) {
+            // Admin can delete any transaction
+            return transactionService.deleteTransaction(id);
+        }
+
+        // Normal users can only delete their own transaction
+        if (returnedTransaction.isPresent() && returnedTransaction.get().getKeycloak_username().equals(username)) {
+            return transactionService.deleteTransaction(id);
+        }
+
+        return Optional.empty();
     }
 }
