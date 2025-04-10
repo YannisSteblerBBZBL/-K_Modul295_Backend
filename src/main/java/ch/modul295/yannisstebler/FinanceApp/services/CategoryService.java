@@ -13,7 +13,7 @@ import ch.modul295.yannisstebler.FinanceApp.repository.CategoryRepository;
 public class CategoryService {
     
     @Autowired
-    private CategoryRepository categoryRepository;
+    private final CategoryRepository categoryRepository;
 
     public CategoryService(CategoryRepository categoryRepository) {
         this.categoryRepository = categoryRepository;
