@@ -8,16 +8,17 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import ch.modul295.yannisstebler.financeapp.model.Category;
+import ch.modul295.yannisstebler.financeapp.repository.CategoryRepository;
+import ch.modul295.yannisstebler.financeapp.services.CategoryService;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import ch.modul295.yannisstebler.FinanceApp.model.Category;
-import ch.modul295.yannisstebler.FinanceApp.repository.CategoryRepository;
-import ch.modul295.yannisstebler.FinanceApp.services.CategoryService;
 
 class CategoryServiceTest {
 

@@ -1,4 +1,4 @@
-package ch.modul295.yannisstebler.FinanceApp.config;
+package ch.modul295.yannisstebler.financeapp.config;
 
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;

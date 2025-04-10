@@ -1,4 +1,4 @@
-package ch.modul295.yannisstebler.FinanceApp.services;
+package ch.modul295.yannisstebler.financeapp.services;
 
 import java.util.List;
 import java.util.Optional;
@@ -8,10 +8,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
-import ch.modul295.yannisstebler.FinanceApp.model.Budget;
-import ch.modul295.yannisstebler.FinanceApp.model.dto.BudgetDTO;
-import ch.modul295.yannisstebler.FinanceApp.repository.BudgetRepository;
-import ch.modul295.yannisstebler.FinanceApp.repository.CategoryRepository;
+import ch.modul295.yannisstebler.financeapp.model.Budget;
+import ch.modul295.yannisstebler.financeapp.model.dto.BudgetDTO;
+import ch.modul295.yannisstebler.financeapp.repository.BudgetRepository;
+import ch.modul295.yannisstebler.financeapp.repository.CategoryRepository;
 @Service
 public class BudgetService {
     

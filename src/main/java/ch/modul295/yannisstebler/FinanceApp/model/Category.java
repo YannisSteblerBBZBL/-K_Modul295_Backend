@@ -1,4 +1,4 @@
-package ch.modul295.yannisstebler.FinanceApp.model;
+package ch.modul295.yannisstebler.financeapp.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

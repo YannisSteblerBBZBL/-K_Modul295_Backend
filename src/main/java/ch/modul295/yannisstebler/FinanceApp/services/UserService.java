@@ -1,4 +1,4 @@
-package ch.modul295.yannisstebler.FinanceApp.services;
+package ch.modul295.yannisstebler.financeapp.services;
 
 import java.util.List;
 import java.util.Optional;
@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import ch.modul295.yannisstebler.FinanceApp.model.User;
-import ch.modul295.yannisstebler.FinanceApp.repository.UserRepository;
+import ch.modul295.yannisstebler.financeapp.model.User;
+import ch.modul295.yannisstebler.financeapp.repository.UserRepository;
 
 @Service
 public class UserService {
@@ -36,6 +36,8 @@ public class UserService {
 
         String keycloakUserId = keycloakService.createKeycloakUser(user.getUsername(), user.getPassword(), "ROLE_user");
         
+        System.out.println("Keycloak user ID: " + keycloakUserId);
+
         if (keycloakUserId == null) {
             throw new RuntimeException("Keycloak user creation failed");
         }

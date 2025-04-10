@@ -1,4 +1,4 @@
-package ch.modul295.yannisstebler.FinanceApp;
+package ch.modul295.yannisstebler.financeapp;
 
 import org.springframework.context.annotation.Configuration;
 

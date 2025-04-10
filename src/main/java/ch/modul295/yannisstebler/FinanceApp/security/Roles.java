@@ -1,4 +1,4 @@
-package ch.modul295.yannisstebler.FinanceApp.security;
+package ch.modul295.yannisstebler.financeapp.security;
 
 public class Roles {
     public static final String USER = "user";

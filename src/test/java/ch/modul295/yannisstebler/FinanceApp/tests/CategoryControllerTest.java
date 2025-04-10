@@ -31,9 +31,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import ch.modul295.yannisstebler.FinanceApp.controller.CategoryController;
-import ch.modul295.yannisstebler.FinanceApp.model.Category;
-import ch.modul295.yannisstebler.FinanceApp.services.CategoryService;
+import ch.modul295.yannisstebler.financeapp.controller.CategoryController;
+import ch.modul295.yannisstebler.financeapp.model.Category;
+import ch.modul295.yannisstebler.financeapp.services.CategoryService;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @AutoConfigureMockMvc

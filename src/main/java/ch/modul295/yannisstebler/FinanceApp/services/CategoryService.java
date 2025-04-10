@@ -1,4 +1,4 @@
-package ch.modul295.yannisstebler.FinanceApp.services;
+package ch.modul295.yannisstebler.financeapp.services;
 
 import java.util.List;
 import java.util.Optional;
@@ -6,8 +6,8 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import ch.modul295.yannisstebler.FinanceApp.model.Category;
-import ch.modul295.yannisstebler.FinanceApp.repository.CategoryRepository;
+import ch.modul295.yannisstebler.financeapp.model.Category;
+import ch.modul295.yannisstebler.financeapp.repository.CategoryRepository;
 
 @Service
 public class CategoryService {

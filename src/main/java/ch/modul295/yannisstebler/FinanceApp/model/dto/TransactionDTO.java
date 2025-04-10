@@ -1,4 +1,4 @@
-package ch.modul295.yannisstebler.FinanceApp.model.dto;
+package ch.modul295.yannisstebler.financeapp.model.dto;
 
 import java.math.BigDecimal;
 import java.util.Date;

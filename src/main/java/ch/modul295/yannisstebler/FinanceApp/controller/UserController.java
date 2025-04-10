@@ -1,4 +1,4 @@
-package ch.modul295.yannisstebler.FinanceApp.controller;
+package ch.modul295.yannisstebler.financeapp.controller;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import ch.modul295.yannisstebler.FinanceApp.model.User;
-import ch.modul295.yannisstebler.FinanceApp.security.Roles;
-import ch.modul295.yannisstebler.FinanceApp.services.UserService;
+import ch.modul295.yannisstebler.financeapp.model.User;
+import ch.modul295.yannisstebler.financeapp.security.Roles;
+import ch.modul295.yannisstebler.financeapp.services.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.annotation.security.RolesAllowed;
 
@@ -43,7 +43,7 @@ public class UserController {
     }
 
     @PostMapping
-    @RolesAllowed(Roles.USER)
+    @RolesAllowed(Roles.ADMIN)
     public ResponseEntity<User> createUser(@RequestBody User user) {
         return userService.createUser(user);
     }

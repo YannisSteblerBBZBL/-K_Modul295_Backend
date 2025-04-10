@@ -1,4 +1,4 @@
-package ch.modul295.yannisstebler.FinanceApp.security;
+package ch.modul295.yannisstebler.financeapp.security;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -48,7 +48,7 @@ public class SecurityConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
                         .allowedMethods("HEAD", "GET", "PUT", "POST", "DELETE", "PATCH", "OPTIONS")
-                        .allowedOrigins("http://localhost:4200");
+                        .allowedOrigins("http://localhost:4200", "http://localhost:8080");
             }
         };
     }

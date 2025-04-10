@@ -1,4 +1,4 @@
-package ch.modul295.yannisstebler.FinanceApp.swaggerUI;
+package ch.modul295.yannisstebler.financeapp.swaggerUI;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;

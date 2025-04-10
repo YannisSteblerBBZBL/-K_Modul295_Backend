@@ -1,4 +1,4 @@
-package ch.modul295.yannisstebler.FinanceApp.controller;
+package ch.modul295.yannisstebler.financeapp.controller;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import ch.modul295.yannisstebler.FinanceApp.model.Category;
-import ch.modul295.yannisstebler.FinanceApp.security.Roles;
-import ch.modul295.yannisstebler.FinanceApp.services.CategoryService;
+import ch.modul295.yannisstebler.financeapp.model.Category;
+import ch.modul295.yannisstebler.financeapp.security.Roles;
+import ch.modul295.yannisstebler.financeapp.services.CategoryService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.annotation.security.RolesAllowed;
 

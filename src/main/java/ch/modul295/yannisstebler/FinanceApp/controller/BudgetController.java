@@ -1,4 +1,4 @@
-package ch.modul295.yannisstebler.FinanceApp.controller;
+package ch.modul295.yannisstebler.financeapp.controller;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,10 +16,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import ch.modul295.yannisstebler.FinanceApp.model.Budget;
-import ch.modul295.yannisstebler.FinanceApp.model.dto.BudgetDTO;
-import ch.modul295.yannisstebler.FinanceApp.security.Roles;
-import ch.modul295.yannisstebler.FinanceApp.services.BudgetService;
+import ch.modul295.yannisstebler.financeapp.model.Budget;
+import ch.modul295.yannisstebler.financeapp.model.dto.BudgetDTO;
+import ch.modul295.yannisstebler.financeapp.security.Roles;
+import ch.modul295.yannisstebler.financeapp.services.BudgetService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.annotation.security.RolesAllowed;
 

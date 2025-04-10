@@ -1,5 +1,4 @@
-package ch.modul295.yannisstebler.FinanceApp.security;
-
+package ch.modul295.yannisstebler.financeapp.security;
 
 import java.util.Collection;
 import java.util.Collections;

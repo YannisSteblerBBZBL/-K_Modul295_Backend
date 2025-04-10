@@ -7,8 +7,8 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.annotation.Rollback;
 
-import ch.modul295.yannisstebler.FinanceApp.model.Category;
-import ch.modul295.yannisstebler.FinanceApp.repository.CategoryRepository;
+import ch.modul295.yannisstebler.financeapp.model.Category;
+import ch.modul295.yannisstebler.financeapp.repository.CategoryRepository;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
