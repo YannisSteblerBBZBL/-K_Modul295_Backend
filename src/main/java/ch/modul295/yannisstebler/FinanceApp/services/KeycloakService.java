@@ -2,7 +2,6 @@ package ch.modul295.yannisstebler.financeapp.services;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.ClientResource;
@@ -53,9 +52,6 @@ public class KeycloakService {
             RoleRepresentation roleRepresentation = clientResource.roles().get(role).toRepresentation();
             usersResource.get(userId).roles().clientLevel(clientResource.toRepresentation().getId()).add(Collections.singletonList(roleRepresentation));
 
-            // Retrieve and return the created user
-            System.out.println("User created with ID: " + userId);
-
             return userId;
         } catch (Exception e) {
             e.printStackTrace();
@@ -70,17 +66,11 @@ public class KeycloakService {
         List<UserRepresentation> users = usersResource.search(username, true);
         
         if (users == null || users.isEmpty()) {
-            System.err.println("User search returned no results for username: " + username);
             throw new RuntimeException("User not found");
         }
-        
-        // Logge die erhaltenen Benutzer zur Überprüfung
-        System.out.println("Found users: " + users.stream().map(UserRepresentation::getUsername).collect(Collectors.joining(", ")));
-        
+
         String userId = users.get(0).getId();
-
-        System.out.println("User ID: " + userId);
-
+        
         return userId;
     }
 

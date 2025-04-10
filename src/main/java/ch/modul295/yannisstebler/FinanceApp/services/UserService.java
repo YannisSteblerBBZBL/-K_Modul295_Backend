@@ -41,6 +41,7 @@ public class UserService {
         }
   
         user.setKeycloakID(keycloakUserId);
+        user.setActive(true);
         
         User savedUser = userRepository.save(user);
         return ResponseEntity.ok(savedUser);
