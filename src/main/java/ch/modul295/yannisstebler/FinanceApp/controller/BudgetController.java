@@ -34,14 +34,32 @@ public class BudgetController {
 
     @GetMapping
     @RolesAllowed(Roles.USER)
-    public List<Budget> getAllBudgets() {
-        return budgetService.getAllBudgets();
+    public List<Budget> getAllBudgets(Authentication auth) {
+        Jwt jwt = (Jwt) auth.getPrincipal();
+        String username = jwt.getClaim("preferred_username");
+
+        List<Budget> returnedBudgets = budgetService.getAllBudgets().stream()
+                .filter(budget -> budget.getKeycloak_username().equals(username))
+                .toList();
+
+        return returnedBudgets;
     }
 
     @GetMapping("/{id}")
     @RolesAllowed(Roles.USER)
-    public Optional<Budget> getBudgetById(@PathVariable Long id) {
-        return budgetService.getBudgetById(id);
+    public Optional<Budget> getBudgetById(Authentication auth, @PathVariable Long id) {
+        Jwt jwt = (Jwt) auth.getPrincipal();
+        String username = jwt.getClaim("preferred_username");
+
+        Optional<Budget> returnedBudget = budgetService.getBudgetById(id);
+        if (returnedBudget.isPresent()) {
+            Budget budget = returnedBudget.get();
+            if (!budget.getKeycloak_username().equals(username)) {
+                return Optional.empty();
+            }
+        }
+
+        return returnedBudget;
     }
 
     @PostMapping
@@ -54,13 +72,25 @@ public class BudgetController {
 
     @PutMapping("/{id}")
     @RolesAllowed(Roles.USER)
-    public Budget updateBudget(@PathVariable Long id, @RequestBody Budget budget) {
+    public Budget updateBudget(Authentication auth, @PathVariable Long id, @RequestBody BudgetDTO budget) {
+        Jwt jwt = (Jwt) auth.getPrincipal();
+        String username = jwt.getClaim("preferred_username");
+        Optional<Budget> returnedBudget = budgetService.getBudgetById(id);
+        if (!returnedBudget.get().getKeycloak_username().equals(username)) {
+            return null;
+        }
         return budgetService.updateBudget(id, budget);
     }
 
     @DeleteMapping("/{id}")
     @RolesAllowed(Roles.USER)
-    public Optional<Budget> deleteBudget(@PathVariable Long id) {
+    public Optional<Budget> deleteBudget(Authentication auth, @PathVariable Long id) {
+        Jwt jwt = (Jwt) auth.getPrincipal();
+        String username = jwt.getClaim("preferred_username");
+        Optional<Budget> returnedBudget = budgetService.getBudgetById(id);
+        if (!returnedBudget.get().getKeycloak_username().equals(username)) {
+            return null;
+        }
         return budgetService.deleteBudget(id);
     }
 }
