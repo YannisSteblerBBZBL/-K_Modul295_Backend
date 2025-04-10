@@ -29,7 +29,9 @@ public class AuthenticationRoleConverter implements Converter<Jwt, AbstractAuthe
         Map<String, Object> resourceAccess = jwt.getClaim("resource_access");
         Collection<String> resourceRoles;
         if (resourceAccess != null) {
-            Map<String, Collection<String>> app = (Map<String, Collection<String>>) resourceAccess.get(appName);
+            Object appObject = resourceAccess.get(appName);
+            Map<String, Collection<String>> app = appObject instanceof Map<?, ?> ? 
+                (Map<String, Collection<String>>) appObject : Collections.emptyMap();
           if ((resourceRoles = app.get("roles")) != null) {
               return resourceRoles.stream()
                       .map(SimpleGrantedAuthority::new)
