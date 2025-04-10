@@ -14,7 +14,7 @@ import ch.modul295.yannisstebler.FinanceApp.repository.UserRepository;
 public class UserService {
 
     @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Autowired
     private KeycloakService keycloakService;
