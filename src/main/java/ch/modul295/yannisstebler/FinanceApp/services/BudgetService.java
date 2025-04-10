@@ -39,15 +39,20 @@ public class BudgetService {
         Budget budget = new Budget();
         budget.setKeycloak_username(username);
         budget.setCategory(categoryRepository.findById(budgetDTO.getCategory_id()).get());
-        budget.setLimit_amount(budget.getLimit_amount());
+        budget.setLimit_amount(budgetDTO.getLimit_amount());
         return budgetRepository.save(budget);
     }
 
-    public Budget updateBudget(Long id, Budget budget) {
+    public Budget updateBudget(Long id, BudgetDTO budgetDTO) {
         if (budgetRepository.existsById(id)) {
+            
             String preferredUsername = getPreferredUsernameFromToken();
+
+            Budget budget = budgetRepository.findById(id).get();
             budget.setKeycloak_username(preferredUsername);
-            budget.setId(id);
+            budget.setCategory(categoryRepository.findById(budgetDTO.getCategory_id()).get());
+            budget.setLimit_amount(budgetDTO.getLimit_amount());
+
             Budget updatedBudget = budgetRepository.save(budget);
             return updatedBudget;
         } else {
