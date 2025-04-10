@@ -1,5 +1,6 @@
 package ch.modul295.yannisstebler.financeapp.services;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,7 +35,7 @@ public class TransactionService {
         transaction.setKeycloak_username(username);
         transaction.setAmount(transactionDTO.getAmount());
         transaction.setType(Transaction.Type.valueOf(transactionDTO.getType().name()));
-        transaction.setDate(transactionDTO.getDate());
+        transaction.setDate(new Date());
         transaction.setCategory(categoryRepository.findById((transactionDTO.getCategory_id())).get());
         return transactionRepository.save(transaction);
     }
