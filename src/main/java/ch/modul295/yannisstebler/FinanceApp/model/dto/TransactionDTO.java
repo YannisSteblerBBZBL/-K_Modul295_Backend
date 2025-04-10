@@ -1,7 +1,6 @@
 package ch.modul295.yannisstebler.financeapp.model.dto;
 
 import java.math.BigDecimal;
-import java.util.Date;
 
 import lombok.Data;
 
@@ -13,8 +12,6 @@ public class TransactionDTO {
     BigDecimal amount;
 
     Type type;
-
-    Date date;
 
     public enum Type {
         INCOME, EXPENSE
