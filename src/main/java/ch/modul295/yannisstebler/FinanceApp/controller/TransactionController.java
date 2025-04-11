@@ -45,7 +45,7 @@ public class TransactionController {
         String username = getUsernameFromAuth(auth);
 
         // Check if the user is an admin
-        if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals(Roles.ADMIN))) {
+        if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_" + Roles.ADMIN))) {
             // Admin can access all transactions
             return transactionService.getAllTransactions();
         }
@@ -64,7 +64,7 @@ public class TransactionController {
         Optional<Transaction> returnedTransaction = transactionService.getTransactionById(id);
 
         // Check if the user is an admin
-        if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals(Roles.ADMIN))) {
+        if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_" + Roles.ADMIN))) {
             // Admin can access any transaction
             return returnedTransaction;
         }
@@ -98,7 +98,7 @@ public class TransactionController {
         Optional<Transaction> returnedTransaction = transactionService.getTransactionById(id);
 
         // Check if the user is an admin
-        if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals(Roles.ADMIN))) {
+        if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_" + Roles.ADMIN))) {
             // Admin can delete any transaction
             return transactionService.deleteTransaction(id);
         }

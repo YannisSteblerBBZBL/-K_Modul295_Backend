@@ -45,7 +45,7 @@ public class BudgetController {
         String username = getUsernameFromAuth(auth);
 
         // Check if the user is an admin
-        if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals(Roles.ADMIN))) {
+        if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_" + Roles.ADMIN))) {
             // Admin can access all budgets
             return budgetService.getAllBudgets();
         }
@@ -64,7 +64,7 @@ public class BudgetController {
         Optional<Budget> returnedBudget = budgetService.getBudgetById(id);
 
         // Check if the user is an admin
-        if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals(Roles.ADMIN))) {
+        if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_" + Roles.ADMIN))) {
             // Admin can access any budget
             return returnedBudget;
         }
@@ -92,7 +92,7 @@ public class BudgetController {
         Optional<Budget> returnedBudget = budgetService.getBudgetById(id);
 
         // Check if the user is an admin
-        if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals(Roles.ADMIN))) {
+        if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_" + Roles.ADMIN))) {
             // Admin can update any budget
             return budgetService.updateBudget(id, budget);
         }
@@ -113,7 +113,7 @@ public class BudgetController {
         Optional<Budget> returnedBudget = budgetService.getBudgetById(id);
 
         // Check if the user is an admin
-        if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals(Roles.ADMIN))) {
+        if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_" + Roles.ADMIN))) {
             // Admin can delete any budget
             return budgetService.deleteBudget(id);
         }

@@ -42,19 +42,19 @@ public class CategoryController {
     }
 
     @PostMapping
-    @RolesAllowed(Roles.USER)
+    @RolesAllowed(Roles.ADMIN)
     public Category createCategory(@RequestBody Category category) {
         return categoryService.createCategory(category);
     }
 
     @PutMapping("/{id}")
-    @RolesAllowed(Roles.USER)
+    @RolesAllowed(Roles.ADMIN)
     public Category updateCategory(@PathVariable Long id, @RequestBody Category category) {
         return categoryService.updateCategory(id, category);
     }
 
     @DeleteMapping("/{id}")
-    @RolesAllowed(Roles.USER)
+    @RolesAllowed(Roles.ADMIN)
     public Optional<Category> deleteCategory(@PathVariable Long id) {
         return categoryService.deleteCategory(id);
     }
