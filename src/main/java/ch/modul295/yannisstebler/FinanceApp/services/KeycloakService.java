@@ -33,6 +33,10 @@ public class KeycloakService {
             ClientResource clientResource = realmResource.clients().get(clientLongId);
            
             // Create user representation
+            if (username == null || username.isEmpty()) {
+                deleteKeycloakUser(username);
+                throw new IllegalArgumentException("Username cannot be null or empty");
+            }
             UserRepresentation user = new UserRepresentation();
             user.setUsername(username);
             user.setEmail(email);
@@ -46,6 +50,10 @@ public class KeycloakService {
             String userId = getUserIdByUsername(username);
 
             // Set password
+            if (password == null || password.isEmpty()) {
+                deleteKeycloakUser(username);
+                throw new IllegalArgumentException("Password cannot be null or empty");
+            }
             CredentialRepresentation credential = new CredentialRepresentation();
             credential.setType(CredentialRepresentation.PASSWORD);
             credential.setValue(password);
