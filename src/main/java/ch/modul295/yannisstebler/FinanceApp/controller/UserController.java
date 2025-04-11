@@ -34,18 +34,30 @@ public class UserController {
 
     // Get all users - Only for admins
     @GetMapping
-    @RolesAllowed(Roles.ADMIN)
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
+    @RolesAllowed(Roles.USER)
+    public List<User> getAllUsers(Authentication auth) {
+
+        String username = ((Jwt) auth.getPrincipal()).getClaim("preferred_username");
+
+        // Check if the user is an admin
+        if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_" + Roles.ADMIN))) {
+            // Admin can access all users
+            return userService.getAllUsers();
+        }
+
+        // Normal users can only access their own user data
+        return userService.getAllUsers().stream()
+                .filter(user -> user.getUsername().toLowerCase().equals(username.toLowerCase()))
+                .toList();
     }
 
     // Get a specific user by ID - Admin can see any user, normal user can only see themselves
     @GetMapping("/{id}")
-    @RolesAllowed({Roles.ADMIN, Roles.USER})
+    @RolesAllowed(Roles.USER)
     public Optional<User> getUserById(@PathVariable Long id, Authentication auth) {
         String username = ((Jwt) auth.getPrincipal()).getClaim("preferred_username");
 
-        if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals(Roles.ADMIN))) {
+        if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_" + Roles.ADMIN))) {
             return userService.getUserById(id);
         } else {
             Optional<User> user = userService.getUserById(id);
@@ -75,7 +87,7 @@ public class UserController {
     public Optional<User> deleteUser(@PathVariable Long id, Authentication auth) {
         String username = ((Jwt) auth.getPrincipal()).getClaim("preferred_username");
 
-        if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals(Roles.ADMIN))) {
+        if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_" + Roles.ADMIN))) {
             return userService.deleteUser(id);
         } else {
             Optional<User> user = userService.getUserById(id);
