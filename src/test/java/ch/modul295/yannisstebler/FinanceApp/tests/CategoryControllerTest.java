@@ -1,25 +1,15 @@
 package ch.modul295.yannisstebler.FinanceApp.tests;
 
-import java.util.Arrays;
-import java.util.Optional;
-
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestMethodOrder;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import static org.mockito.Mockito.when;
-import org.mockito.MockitoAnnotations;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureDataJpa;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.json.JacksonJsonParser;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.test.annotation.Rollback;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -27,113 +17,125 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import ch.modul295.yannisstebler.financeapp.controller.CategoryController;
 import ch.modul295.yannisstebler.financeapp.model.Category;
-import ch.modul295.yannisstebler.financeapp.services.CategoryService;
+import ch.modul295.yannisstebler.financeapp.repository.CategoryRepository;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
-@AutoConfigureDataJpa
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Rollback(false)
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Transactional
 public class CategoryControllerTest {
 
+    @Autowired
     private MockMvc mockMvc;
 
-    @Mock
-    private CategoryService categoryService;
-
-    @InjectMocks
-    private CategoryController categoryController;
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     private ObjectMapper objectMapper;
 
     @BeforeEach
     public void setup() {
-        MockitoAnnotations.openMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(categoryController).build();
         objectMapper = new ObjectMapper();
+
+        categoryRepository.deleteAll();
+
+        Category foodCategory = new Category();
+        foodCategory.setName("Food");
+        foodCategory.setDescription("Category for food-related expenses");
+        categoryRepository.save(foodCategory);
+
+        Category transportCategory = new Category();
+        transportCategory.setName("Transport");
+        transportCategory.setDescription("Category for transportation-related expenses");
+        categoryRepository.save(transportCategory);
     }
 
     @Test
     public void testGetAllCategories() throws Exception {
-        Category category1 = new Category();
-        category1.setId(1L);
-        category1.setName("Food");
-        category1.setDescription("Expenses related to food");
-
-        Category category2 = new Category();
-        category2.setId(2L);
-        category2.setName("Transport");
-        category2.setDescription("Expenses related to transport");
-
-        when(categoryService.getAllCategories()).thenReturn(Arrays.asList(category1, category2));
+        String accessToken = obtainAccessToken();
 
         mockMvc.perform(get("/categories")
-                .header("Authorization", "Bearer token")
+                .header("Authorization", "Bearer " + accessToken)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name").value("Food"))
-                .andExpect(jsonPath("$[0].description").value("Expenses related to food"))
-                .andExpect(jsonPath("$[1].name").value("Transport"))
-                .andExpect(jsonPath("$[1].description").value("Expenses related to transport"));
+                .andExpect(jsonPath("$[1].name").value("Transport"));
     }
 
     @Test
     public void testCreateCategory() throws Exception {
-        Category category = new Category();
-        category.setId(1L);
-        category.setName("Utilities");
-        category.setDescription("Expenses related to utilities");
+        String accessToken = obtainAccessToken();
 
-        when(categoryService.createCategory(any(Category.class))).thenReturn(category);
+        Category category = new Category();
+        category.setName("Test Category");
+        category.setDescription("Test Category Description");
 
         mockMvc.perform(post("/categories")
-                .header("Authorization", "Bearer token")
+                .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(category)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Utilities"))
-                .andExpect(jsonPath("$.description").value("Expenses related to utilities"));
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name").value(category.getName()))
+                .andExpect(jsonPath("$.description").value(category.getDescription()));
     }
 
     @Test
     public void testUpdateCategory() throws Exception {
-        Category category = new Category();
-        category.setId(1L);
-        category.setName("Updated Name");
-        category.setDescription("Updated Description");
+        String accessToken = obtainAccessToken();
 
-        when(categoryService.updateCategory(eq(1L), any(Category.class))).thenReturn(category);
+        // Hole eine existierende Kategorie aus der DB
+        Category existingCategory = categoryRepository.findAll().get(0);
+        existingCategory.setName("Updated Category");
+        existingCategory.setDescription("Updated Description");
 
-        mockMvc.perform(put("/categories/1")
-                .header("Authorization", "Bearer token")
+        mockMvc.perform(put("/categories/" + existingCategory.getId())
+                .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(category)))
+                .content(objectMapper.writeValueAsString(existingCategory)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Updated Name"))
+                .andExpect(jsonPath("$.name").value("Updated Category"))
                 .andExpect(jsonPath("$.description").value("Updated Description"));
     }
 
     @Test
     public void testDeleteCategory() throws Exception {
-        Category category = new Category();
-        category.setId(1L);
-        category.setName("To Be Deleted");
-        category.setDescription("This category will be deleted");
+        String accessToken = obtainAccessToken();
 
-        when(categoryService.deleteCategory(1L)).thenReturn(Optional.of(category));
+        // Hole eine existierende Kategorie aus der DB
+        Category existingCategory = categoryRepository.findAll().get(0);
 
-        mockMvc.perform(delete("/categories/1")
-                .header("Authorization", "Bearer token"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("To Be Deleted"))
-                .andExpect(jsonPath("$.description").value("This category will be deleted"));
+        mockMvc.perform(delete("/categories/" + existingCategory.getId())
+                .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/categories/" + existingCategory.getId())
+                .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isNotFound());
+    }
+
+    private String obtainAccessToken() {
+        RestTemplate rest = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        String body = "client_id=FinanceApp&" +
+                "grant_type=password&" +
+                "scope=openid profile roles offline_access&" +
+                "client_secret=SytRPZuvq1uU7qM8fozRbUGKaYKosioo&" +
+                "username=test&" +
+                "password=test";
+
+        HttpEntity<String> entity = new HttpEntity<>(body, headers);
+
+        ResponseEntity<String> resp = rest.postForEntity("http://localhost:8080/realms/financeApp/protocol/openid-connect/token", entity, String.class);
+
+        JacksonJsonParser jsonParser = new JacksonJsonParser();
+        return jsonParser.parseMap(resp.getBody()).get("access_token").toString();
     }
 }
