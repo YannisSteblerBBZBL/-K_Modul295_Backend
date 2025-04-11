@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.validation.annotation.Validated;
@@ -40,25 +42,28 @@ public class TransactionController {
 
     @GetMapping
     @RolesAllowed(Roles.USER)
-    public List<Transaction> getAllTransactions(Authentication auth) {
+    public ResponseEntity<List<Transaction>> getAllTransactions(Authentication auth) {
 
         String username = getUsernameFromAuth(auth);
 
         // Check if the user is an admin
         if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_" + Roles.ADMIN))) {
             // Admin can access all transactions
-            return transactionService.getAllTransactions();
+            List<Transaction> transactions = transactionService.getAllTransactions();
+            return ResponseEntity.ok(transactions);
         }
 
         // Normal users can only access their own transactions
-        return transactionService.getAllTransactions().stream()
+        List<Transaction> userTransactions = transactionService.getAllTransactions().stream()
                 .filter(transaction -> transaction.getKeycloak_username().equals(username))
                 .toList();
+        
+        return ResponseEntity.ok(userTransactions);
     }
 
     @GetMapping("/{id}")
     @RolesAllowed(Roles.USER)
-    public Optional<Transaction> getTransactionById(Authentication auth, @PathVariable Long id) {
+    public ResponseEntity<Transaction> getTransactionById(Authentication auth, @PathVariable Long id) {
 
         String username = getUsernameFromAuth(auth);
         Optional<Transaction> returnedTransaction = transactionService.getTransactionById(id);
@@ -66,48 +71,60 @@ public class TransactionController {
         // Check if the user is an admin
         if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_" + Roles.ADMIN))) {
             // Admin can access any transaction
-            return returnedTransaction;
+            return returnedTransaction.map(ResponseEntity::ok)
+                                      .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
         }
 
         // Normal users can only access their own transaction
         if (returnedTransaction.isPresent() && returnedTransaction.get().getKeycloak_username().equals(username)) {
-            return returnedTransaction;
+            return ResponseEntity.ok(returnedTransaction.get());
         }
 
-        return Optional.empty();
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();  // Forbidden if the user doesn't own the transaction
     }
 
     @PostMapping
     @RolesAllowed(Roles.USER)
-    public Transaction createTransaction(Authentication auth, @RequestBody TransactionDTO transaction) {
+    public ResponseEntity<Transaction> createTransaction(Authentication auth, @RequestBody TransactionDTO transactionDTO) {
         String username = getUsernameFromAuth(auth);
-        return transactionService.createTransaction(username, transaction);
+        Transaction createdTransaction = transactionService.createTransaction(username, transactionDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdTransaction);
     }
 
     @PutMapping("/{id}")
     @RolesAllowed(Roles.USER)
-    public Transaction updateTransaction(Authentication auth, @PathVariable Long id, @RequestBody Transaction transaction) {
+    public ResponseEntity<Transaction> updateTransaction(Authentication auth, @PathVariable Long id, @RequestBody Transaction transaction) {
         String username = getUsernameFromAuth(auth);
-        return transactionService.updateTransaction(username, id, transaction);
+
+        // Check if the transaction belongs to the user or if user is an admin
+        if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_" + Roles.ADMIN)) || 
+            transaction.getKeycloak_username().equals(username)) {
+            Transaction updatedTransaction = transactionService.updateTransaction(username, id, transaction);
+            return ResponseEntity.ok(updatedTransaction);
+        }
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();  // Forbidden if the user doesn't own the transaction
     }
 
     @DeleteMapping("/{id}")
     @RolesAllowed(Roles.USER)
-    public Optional<Transaction> deleteTransaction(Authentication auth, @PathVariable Long id) {
+    public ResponseEntity<Void> deleteTransaction(Authentication auth, @PathVariable Long id) {
         String username = getUsernameFromAuth(auth);
         Optional<Transaction> returnedTransaction = transactionService.getTransactionById(id);
 
         // Check if the user is an admin
         if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_" + Roles.ADMIN))) {
             // Admin can delete any transaction
-            return transactionService.deleteTransaction(id);
+            transactionService.deleteTransaction(id);
+            return ResponseEntity.noContent().build();  // 204 No Content
         }
 
         // Normal users can only delete their own transaction
         if (returnedTransaction.isPresent() && returnedTransaction.get().getKeycloak_username().equals(username)) {
-            return transactionService.deleteTransaction(id);
+            transactionService.deleteTransaction(id);
+            return ResponseEntity.noContent().build();  // 204 No Content
         }
 
-        return Optional.empty();
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();  // Forbidden if the user doesn't own the transaction
     }
 }

@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.validation.annotation.Validated;
@@ -40,25 +42,26 @@ public class BudgetController {
 
     @GetMapping
     @RolesAllowed(Roles.USER)
-    public List<Budget> getAllBudgets(Authentication auth) {
+    public ResponseEntity<List<Budget>> getAllBudgets(Authentication auth) {
 
         String username = getUsernameFromAuth(auth);
 
         // Check if the user is an admin
         if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_" + Roles.ADMIN))) {
             // Admin can access all budgets
-            return budgetService.getAllBudgets();
+            return ResponseEntity.ok(budgetService.getAllBudgets());
         }
 
         // Normal users can only access their own budgets
-        return budgetService.getAllBudgets().stream()
+        List<Budget> userBudgets = budgetService.getAllBudgets().stream()
                 .filter(budget -> budget.getKeycloak_username().equals(username))
                 .toList();
+        return ResponseEntity.ok(userBudgets);
     }
 
     @GetMapping("/{id}")
     @RolesAllowed(Roles.USER)
-    public Optional<Budget> getBudgetById(Authentication auth, @PathVariable Long id) {
+    public ResponseEntity<Budget> getBudgetById(Authentication auth, @PathVariable Long id) {
 
         String username = getUsernameFromAuth(auth);
         Optional<Budget> returnedBudget = budgetService.getBudgetById(id);
@@ -66,27 +69,28 @@ public class BudgetController {
         // Check if the user is an admin
         if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_" + Roles.ADMIN))) {
             // Admin can access any budget
-            return returnedBudget;
+            return returnedBudget.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
         }
 
         // Normal users can only access their own budget
         if (returnedBudget.isPresent() && returnedBudget.get().getKeycloak_username().equals(username)) {
-            return returnedBudget;
+            return ResponseEntity.ok(returnedBudget.get());
         }
 
-        return Optional.empty();
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
     @PostMapping
     @RolesAllowed(Roles.USER)
-    public Budget createBudget(Authentication auth, @RequestBody BudgetDTO budget) {
+    public ResponseEntity<Budget> createBudget(Authentication auth, @RequestBody BudgetDTO budget) {
         String username = getUsernameFromAuth(auth);
-        return budgetService.createBudget(username, budget);
+        Budget createdBudget = budgetService.createBudget(username, budget);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdBudget);
     }
 
     @PutMapping("/{id}")
     @RolesAllowed(Roles.USER)
-    public Budget updateBudget(Authentication auth, @PathVariable Long id, @RequestBody BudgetDTO budget) {
+    public ResponseEntity<Budget> updateBudget(Authentication auth, @PathVariable Long id, @RequestBody BudgetDTO budget) {
 
         String username = getUsernameFromAuth(auth);
         Optional<Budget> returnedBudget = budgetService.getBudgetById(id);
@@ -94,20 +98,22 @@ public class BudgetController {
         // Check if the user is an admin
         if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_" + Roles.ADMIN))) {
             // Admin can update any budget
-            return budgetService.updateBudget(id, budget);
+            Budget updatedBudget = budgetService.updateBudget(id, budget);
+            return ResponseEntity.ok(updatedBudget);
         }
 
         // Normal users can only update their own budget
         if (returnedBudget.isPresent() && returnedBudget.get().getKeycloak_username().equals(username)) {
-            return budgetService.updateBudget(id, budget);
+            Budget updatedBudget = budgetService.updateBudget(id, budget);
+            return ResponseEntity.ok(updatedBudget);
         }
 
-        return null;
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
     @DeleteMapping("/{id}")
     @RolesAllowed(Roles.USER)
-    public Optional<Budget> deleteBudget(Authentication auth, @PathVariable Long id) {
+    public ResponseEntity<Void> deleteBudget(Authentication auth, @PathVariable Long id) {
 
         String username = getUsernameFromAuth(auth);
         Optional<Budget> returnedBudget = budgetService.getBudgetById(id);
@@ -115,14 +121,16 @@ public class BudgetController {
         // Check if the user is an admin
         if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_" + Roles.ADMIN))) {
             // Admin can delete any budget
-            return budgetService.deleteBudget(id);
+            budgetService.deleteBudget(id);
+            return ResponseEntity.noContent().build();
         }
 
         // Normal users can only delete their own budget
         if (returnedBudget.isPresent() && returnedBudget.get().getKeycloak_username().equals(username)) {
-            return budgetService.deleteBudget(id);
+            budgetService.deleteBudget(id);
+            return ResponseEntity.noContent().build();
         }
 
-        return Optional.empty();
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 }
