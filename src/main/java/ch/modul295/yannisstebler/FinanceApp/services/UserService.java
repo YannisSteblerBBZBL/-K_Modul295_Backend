@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import ch.modul295.yannisstebler.financeapp.model.User;
 import ch.modul295.yannisstebler.financeapp.repository.UserRepository;
+import jakarta.validation.Valid;
 
 @Service
 public class UserService {
@@ -32,19 +33,34 @@ public class UserService {
         return user;
     }
 
-    public ResponseEntity<User> createUser(User user) {
+    public ResponseEntity<User> createUser(@Valid User user) {
+        // Create the user in Keycloak
+        String keycloakUserId = keycloakService.createKeycloakUser(
+            user.getUsername(),
+            user.getPassword(),
+            user.getEmail(),
+            user.getFirstName(),
+            user.getLastName(),
+            "ROLE_user"
+        );
 
-        String keycloakUserId = keycloakService.createKeycloakUser(user.getUsername(), user.getPassword(), user.getEmail(), user.getFirstName(), user.getLastName(), "ROLE_user");
-        
+        // If Keycloak user creation failed
         if (keycloakUserId == null) {
-            return ResponseEntity.status(500).body(null);
+            return ResponseEntity.status(500).body(null); // 500 Internal Server Error: Keycloak user creation failed
         }
-  
+
+        // Set the Keycloak user ID and mark the user as active
         user.setKeycloakID(keycloakUserId);
         user.setActive(true);
-        
-        User savedUser = userRepository.save(user);
-        return ResponseEntity.ok(savedUser);
+
+        // Save the user in the database
+        try {
+            User savedUser = userRepository.save(user);
+            return ResponseEntity.status(201).body(savedUser); // 201 Created: User successfully created
+        } catch (Exception e) {
+            // If saving user in the database fails
+            return ResponseEntity.status(500).body(null); // 500 Internal Server Error: Database error
+        }
     }
 
     public User updateUser(Long id, User user) {
