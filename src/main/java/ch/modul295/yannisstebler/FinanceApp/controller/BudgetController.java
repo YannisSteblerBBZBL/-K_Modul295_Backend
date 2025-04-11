@@ -25,6 +25,10 @@ import ch.modul295.yannisstebler.financeapp.services.BudgetService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.annotation.security.RolesAllowed;
 
+/**
+ * Controller class for managing budgets.
+ * Provides endpoints for creating, updating, retrieving, and deleting budgets.
+ */
 @RestController
 @RequestMapping("/budgets")
 @SecurityRequirement(name = "bearerAuth")
@@ -34,16 +38,26 @@ public class BudgetController {
     @Autowired
     private BudgetService budgetService;
 
-    // Helper method to extract username from JWT token
+    /**
+     * Helper method to extract username from JWT token.
+     *
+     * @param auth The authentication object containing the JWT token.
+     * @return The username from the JWT token.
+     */
     private String getUsernameFromAuth(Authentication auth) {
         Jwt jwt = (Jwt) auth.getPrincipal();
         return jwt.getClaim("preferred_username");
     }
 
+    /**
+     * Endpoint to get all budgets for the authenticated user or for admins.
+     *
+     * @param auth The authentication object containing user details.
+     * @return A list of budgets.
+     */
     @GetMapping
     @RolesAllowed(Roles.USER)
     public ResponseEntity<List<Budget>> getAllBudgets(Authentication auth) {
-
         String username = getUsernameFromAuth(auth);
 
         // Check if the user is an admin
@@ -59,10 +73,17 @@ public class BudgetController {
         return ResponseEntity.ok(userBudgets);
     }
 
+    /**
+     * Endpoint to get a specific budget by its ID.
+     * Admins can access any budget, while normal users can only access their own.
+     *
+     * @param auth The authentication object containing user details.
+     * @param id The ID of the budget.
+     * @return The requested budget.
+     */
     @GetMapping("/{id}")
     @RolesAllowed(Roles.USER)
     public ResponseEntity<Budget> getBudgetById(Authentication auth, @PathVariable Long id) {
-
         String username = getUsernameFromAuth(auth);
         Optional<Budget> returnedBudget = budgetService.getBudgetById(id);
 
@@ -80,6 +101,14 @@ public class BudgetController {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
+    /**
+     * Endpoint to create a new budget.
+     * Only users with the USER role can create budgets.
+     *
+     * @param auth The authentication object containing user details.
+     * @param budget The budget data to be created.
+     * @return The created budget.
+     */
     @PostMapping
     @RolesAllowed(Roles.USER)
     public ResponseEntity<Budget> createBudget(Authentication auth, @RequestBody BudgetDTO budget) {
@@ -88,10 +117,18 @@ public class BudgetController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdBudget);
     }
 
+    /**
+     * Endpoint to update an existing budget.
+     * Admins can update any budget, while normal users can only update their own.
+     *
+     * @param auth The authentication object containing user details.
+     * @param id The ID of the budget to be updated.
+     * @param budget The new budget data.
+     * @return The updated budget.
+     */
     @PutMapping("/{id}")
     @RolesAllowed(Roles.USER)
     public ResponseEntity<Budget> updateBudget(Authentication auth, @PathVariable Long id, @RequestBody BudgetDTO budget) {
-
         String username = getUsernameFromAuth(auth);
         Optional<Budget> returnedBudget = budgetService.getBudgetById(id);
 
@@ -111,10 +148,17 @@ public class BudgetController {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
+    /**
+     * Endpoint to delete a budget by its ID.
+     * Admins can delete any budget, while normal users can only delete their own.
+     *
+     * @param auth The authentication object containing user details.
+     * @param id The ID of the budget to be deleted.
+     * @return HTTP status indicating the result of the deletion.
+     */
     @DeleteMapping("/{id}")
     @RolesAllowed(Roles.USER)
     public ResponseEntity<Void> deleteBudget(Authentication auth, @PathVariable Long id) {
-
         String username = getUsernameFromAuth(auth);
         Optional<Budget> returnedBudget = budgetService.getBudgetById(id);
 

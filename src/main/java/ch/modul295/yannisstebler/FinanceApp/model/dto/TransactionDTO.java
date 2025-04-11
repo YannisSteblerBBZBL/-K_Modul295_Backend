@@ -16,4 +16,4 @@ public class TransactionDTO {
     public enum Type {
         INCOME, EXPENSE
     }
-    }
+}

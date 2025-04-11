@@ -21,6 +21,7 @@ public class SecurityConfig {
     @Value("${spring.application.name}")
     private String appName;
 
+    // Whitelisted paths that don't require authentication
     private static final String[] AUTH_WHITELIST = {
         "/v3/api-docs/**",
         "/swagger-ui/**",
@@ -38,12 +39,11 @@ public class SecurityConfig {
         http.authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(AUTH_WHITELIST).permitAll()
                 .anyRequest().authenticated())
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(new AuthenticationRoleConverter(appName))))
-            
-            // Deaktiviere CSRF für POST /users
+            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(new AuthenticationRoleConverter(appName))))  
             .csrf(csrf -> csrf
                 .ignoringRequestMatchers(new AntPathRequestMatcher("/users", "POST"))
-                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).csrfTokenRequestHandler(requestHandler))
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                .csrfTokenRequestHandler(requestHandler)) 
             .cors(cors -> corsConfigurer());
 
         return http.build();

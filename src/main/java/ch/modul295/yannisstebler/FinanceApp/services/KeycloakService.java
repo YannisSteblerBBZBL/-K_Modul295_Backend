@@ -14,27 +14,42 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+/**
+ * Service class for interacting with Keycloak to manage users and roles.
+ */
 @Service
 public class KeycloakService {
+    
     @Autowired
     private Keycloak keycloak;
 
     @Value("${keycloak.realm}")
-    private String realm;
+    private String realm; 
 
     @Value("${keycloak.clientLongId}")
-    private String clientLongId;
+    private String clientLongId; 
 
+    /**
+     * Creates a new user in Keycloak with the specified details.
+     * 
+     * @param username the username of the new user
+     * @param password the password of the new user
+     * @param email the email of the new user
+     * @param firstName the first name of the new user
+     * @param lastName the last name of the new user
+     * @param role the role to assign to the user
+     * @return the user ID if successful, or null if there was an error
+     */
     public String createKeycloakUser(String username, String password, String email, String firstName, String lastName, String role) {
         try {
-            // Get realm
+            // Get realm and resources for managing users and clients
             RealmResource realmResource = keycloak.realm(realm);
             UsersResource usersResource = realmResource.users();
             ClientResource clientResource = realmResource.clients().get(clientLongId);
-           
-            // Create user representation
+            
+            // Validate and create user representation
             if (username == null || username.isEmpty()) {
-                deleteKeycloakUser(username);
+                deleteKeycloakUser(username); 
                 throw new IllegalArgumentException("Username cannot be null or empty");
             }
             UserRepresentation user = new UserRepresentation();
@@ -45,7 +60,7 @@ public class KeycloakService {
             user.setEnabled(true);
             user.setEmailVerified(true);
 
-            // Create user
+            // Create user in Keycloak
             usersResource.create(user);
             String userId = getUserIdByUsername(username);
 
@@ -60,7 +75,7 @@ public class KeycloakService {
             credential.setTemporary(false);
             usersResource.get(userId).resetPassword(credential);
 
-            // Assign role
+            // Assign role to user
             RoleRepresentation roleRepresentation = clientResource.roles().get(role).toRepresentation();
             usersResource.get(userId).roles().clientLevel(clientResource.toRepresentation().getId()).add(Collections.singletonList(roleRepresentation));
 
@@ -71,6 +86,13 @@ public class KeycloakService {
         }
     }
 
+    /**
+     * Retrieves the user ID by username.
+     * 
+     * @param username the username of the user
+     * @return the user ID
+     * @throws RuntimeException if the user is not found
+     */
     public String getUserIdByUsername(String username) {
         RealmResource realmResource = keycloak.realm(realm);
         UsersResource usersResource = realmResource.users();
@@ -78,14 +100,18 @@ public class KeycloakService {
         List<UserRepresentation> users = usersResource.search(username, true);
         
         if (users == null || users.isEmpty()) {
-            throw new RuntimeException("User not found");
+            throw new RuntimeException("User not found"); 
         }
 
-        String userId = users.get(0).getId();
-        
-        return userId;
+        return users.get(0).getId();
     }
 
+    /**
+     * Deletes a user from Keycloak by their username.
+     * 
+     * @param username the username of the user to be deleted
+     * @return true if the user was deleted, false if the user was not found
+     */
     public boolean deleteKeycloakUser(String username) {
         try {
             RealmResource realmResource = keycloak.realm(realm);
@@ -93,12 +119,12 @@ public class KeycloakService {
 
             List<UserRepresentation> users = usersResource.search(username, true);
             if (users.isEmpty()) {
-                return false;
+                return false; 
             }
 
             String userId = users.get(0).getId();
             usersResource.delete(userId);
-            return true;
+            return true; 
         } catch (Exception e) {
             e.printStackTrace();
             return false;

@@ -24,6 +24,10 @@ import ch.modul295.yannisstebler.financeapp.services.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.annotation.security.RolesAllowed;
 
+/**
+ * Controller class for managing user-related actions.
+ * Provides endpoints for creating, retrieving, updating, and deleting users.
+ */
 @RestController
 @RequestMapping("/users")
 @SecurityRequirement(name = "bearerAuth")
@@ -33,7 +37,13 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    // Get all users - Only for admins
+    /**
+     * Endpoint to retrieve all users. Admins can view all users.
+     * Normal users can only view their own information.
+     * 
+     * @param auth The authentication object containing the user's details.
+     * @return A list of users that the requesting user has access to.
+     */
     @GetMapping
     @RolesAllowed(Roles.USER)
     public ResponseEntity<List<User>> getAllUsers(Authentication auth) {
@@ -46,7 +56,7 @@ public class UserController {
             return ResponseEntity.ok(users);
         }
 
-        // Normal users can only access their own user data
+        // Normal users can only access their own data
         List<User> filteredUsers = userService.getAllUsers().stream()
                 .filter(user -> user.getUsername().equalsIgnoreCase(username))
                 .toList();
@@ -54,26 +64,41 @@ public class UserController {
         return ResponseEntity.ok(filteredUsers);
     }
 
-    // Get a specific user by ID - Admin can see any user, normal user can only see themselves
+    /**
+     * Endpoint to retrieve a specific user by ID. Admins can view any user.
+     * Normal users can only view their own data.
+     *
+     * @param id The ID of the user to be retrieved.
+     * @param auth The authentication object containing the user's details.
+     * @return The requested user or HTTP status NOT_FOUND if the user does not exist.
+     */
     @GetMapping("/{id}")
     @RolesAllowed(Roles.USER)
     public ResponseEntity<User> getUserById(@PathVariable Long id, Authentication auth) {
         String username = ((Jwt) auth.getPrincipal()).getClaim("preferred_username");
 
+        // Admins can view any user
         if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_" + Roles.ADMIN))) {
             Optional<User> user = userService.getUserById(id);
             return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
         } else {
+            // Normal users can only view themselves
             Optional<User> user = userService.getUserById(id);
             if (user.isPresent() && user.get().getUsername().equals(username)) {
                 return ResponseEntity.ok(user.get());
             }
         }
 
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // Forbidden if user doesn't own the account
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // Forbidden if the user doesn't own the account
     }
 
-    // Create user - No role check, can be public or restricted
+    /**
+     * Endpoint to create a new user.
+     * This endpoint does not require any authentication or authorization, so it could be publicly accessible.
+     * 
+     * @param user The user data to be created.
+     * @return The created user, or an appropriate error status.
+     */
     @PostMapping
     public ResponseEntity<User> createUser(@RequestBody User user) {
         ResponseEntity<User> response = userService.createUser(user);
@@ -87,7 +112,13 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);  // 500 Internal Server Error - Unexpected issue
     }
 
-    // Update user - Admin only, no option for normal users to update
+    /**
+     * Endpoint to update a user by ID. Only admins are allowed to update user data.
+     *
+     * @param id The ID of the user to be updated.
+     * @param user The updated user data.
+     * @return The updated user or HTTP status NOT_FOUND if the user does not exist.
+     */
     @PutMapping("/{id}")
     @RolesAllowed(Roles.ADMIN)
     public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User user) {
@@ -95,16 +126,25 @@ public class UserController {
         return ResponseEntity.ok(updatedUser);  // 200 OK
     }
 
-    // Delete user - Normal users can only delete themselves, admins can delete any user
+    /**
+     * Endpoint to delete a user by ID. Admins can delete any user.
+     * Normal users can only delete their own account.
+     *
+     * @param id The ID of the user to be deleted.
+     * @param auth The authentication object containing the user's details.
+     * @return HTTP status indicating the result of the deletion.
+     */
     @DeleteMapping("/{id}")
     @RolesAllowed({Roles.ADMIN, Roles.USER})
     public ResponseEntity<Void> deleteUser(@PathVariable Long id, Authentication auth) {
         String username = ((Jwt) auth.getPrincipal()).getClaim("preferred_username");
 
+        // Admins can delete any user
         if (auth.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_" + Roles.ADMIN))) {
             userService.deleteUser(id);
             return ResponseEntity.noContent().build();  // 204 No Content
         } else {
+            // Normal users can only delete themselves
             Optional<User> user = userService.getUserById(id);
             if (user.isPresent() && user.get().getUsername().equals(username)) {
                 userService.deleteUser(id);
