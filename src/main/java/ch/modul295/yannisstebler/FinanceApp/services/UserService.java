@@ -34,7 +34,7 @@ public class UserService {
 
     public ResponseEntity<User> createUser(User user) {
 
-        String keycloakUserId = keycloakService.createKeycloakUser(user.getUsername(), user.getPassword(), "ROLE_user");
+        String keycloakUserId = keycloakService.createKeycloakUser(user.getUsername(), user.getPassword(), user.getEmail(), user.getFirstName(), user.getLastName(), "ROLE_user");
         
         if (keycloakUserId == null) {
             return ResponseEntity.status(500).body(null);

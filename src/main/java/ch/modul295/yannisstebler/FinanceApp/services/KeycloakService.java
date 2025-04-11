@@ -25,7 +25,7 @@ public class KeycloakService {
     @Value("${keycloak.clientLongId}")
     private String clientLongId;
 
-    public String createKeycloakUser(String username, String password, String role) {
+    public String createKeycloakUser(String username, String password, String email, String firstName, String lastName, String role) {
         try {
             // Get realm
             RealmResource realmResource = keycloak.realm(realm);
@@ -35,6 +35,9 @@ public class KeycloakService {
             // Create user representation
             UserRepresentation user = new UserRepresentation();
             user.setUsername(username);
+            user.setEmail(email);
+            user.setFirstName(firstName);
+            user.setLastName(lastName);
             user.setEnabled(true);
             user.setEmailVerified(true);
 
