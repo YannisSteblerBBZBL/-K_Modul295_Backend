@@ -31,10 +31,10 @@ public class Transaction {
     @Column(nullable = false)
     BigDecimal amount;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     Type type;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     Date date;
 
     public enum Type {
