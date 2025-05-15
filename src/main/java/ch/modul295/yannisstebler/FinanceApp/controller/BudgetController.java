@@ -30,7 +30,7 @@ import jakarta.annotation.security.RolesAllowed;
  * Provides endpoints for creating, updating, retrieving, and deleting budgets.
  */
 @RestController
-@RequestMapping("/budgets")
+@RequestMapping("/api/budgets")
 @SecurityRequirement(name = "bearerAuth")
 @Validated
 public class BudgetController {

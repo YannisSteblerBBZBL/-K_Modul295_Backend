@@ -30,7 +30,7 @@ import jakarta.annotation.security.RolesAllowed;
  * Provides endpoints for creating, updating, retrieving, and deleting transactions.
  */
 @RestController
-@RequestMapping("/transactions")
+@RequestMapping("/api/transactions")
 @SecurityRequirement(name = "bearerAuth")
 @Validated
 public class TransactionController {

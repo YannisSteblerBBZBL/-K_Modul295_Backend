@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import jakarta.ws.rs.core.Response;
+
 /**
  * Service class for interacting with Keycloak to manage users and roles.
  */
@@ -61,7 +63,17 @@ public class KeycloakService {
             user.setEmailVerified(true);
 
             // Create user in Keycloak
-            usersResource.create(user);
+            Response response = usersResource.create(user);
+
+            if (response.getStatus() != 201) {
+                System.err.println("User creation failed: " + response.getStatusInfo());
+                response.close();
+                return null;
+            }
+
+            response.close();
+
+
             String userId = getUserIdByUsername(username);
 
             // Set password

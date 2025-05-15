@@ -29,7 +29,7 @@ import jakarta.annotation.security.RolesAllowed;
  * Provides endpoints for creating, retrieving, updating, and deleting users.
  */
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/users")
 @SecurityRequirement(name = "bearerAuth")
 @Validated
 public class UserController {

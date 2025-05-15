@@ -27,7 +27,7 @@ import jakarta.annotation.security.RolesAllowed;
  * Provides endpoints for creating, updating, retrieving, and deleting categories.
  */
 @RestController
-@RequestMapping("/categories")
+@RequestMapping("/api/categories")
 @SecurityRequirement(name = "bearerAuth")
 @Validated
 public class CategoryController {

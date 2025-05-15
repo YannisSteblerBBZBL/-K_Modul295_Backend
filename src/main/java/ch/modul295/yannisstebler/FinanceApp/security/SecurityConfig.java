@@ -27,8 +27,7 @@ public class SecurityConfig {
         "/swagger-ui/**",
         "/swagger-ui.html",
         "/v3/api-docs.yaml",
-        "/swagger",
-        "/users"
+        "/swagger"
     };
 
     @Bean
@@ -37,14 +36,15 @@ public class SecurityConfig {
         requestHandler.setCsrfRequestAttributeName(null);
 
         http.authorizeHttpRequests(authorize -> authorize
-                .requestMatchers(AUTH_WHITELIST).permitAll()
-                .anyRequest().authenticated())
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(new AuthenticationRoleConverter(appName))))  
-            .csrf(csrf -> csrf
-                .ignoringRequestMatchers(new AntPathRequestMatcher("/users", "POST"))
+                .requestMatchers(AUTH_WHITELIST).permitAll() // Existing whitelist
+                .requestMatchers(new AntPathRequestMatcher("/api/users", "POST")).permitAll() // Allow POST to /api/users
+                .anyRequest().authenticated()) // Require authentication for all other requests
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(new AuthenticationRoleConverter(appName))))
+                .csrf(csrf -> csrf
+                .ignoringRequestMatchers(new AntPathRequestMatcher("/api/users", "POST"))
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                .csrfTokenRequestHandler(requestHandler)) 
-            .cors(cors -> corsConfigurer());
+                .csrfTokenRequestHandler(requestHandler))
+                .cors(cors -> corsConfigurer());
 
         return http.build();
     }
