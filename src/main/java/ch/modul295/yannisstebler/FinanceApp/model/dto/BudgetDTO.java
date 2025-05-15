@@ -7,6 +7,8 @@ import lombok.Data;
 @Data
 public class BudgetDTO {
 
+    Long id;
+
     Long category_id;
 
     BigDecimal limit_amount;

@@ -7,6 +7,8 @@ import lombok.Data;
 @Data
 public class TransactionDTO {
 
+    Long id;
+
     Long category_id;
 
     BigDecimal amount;
