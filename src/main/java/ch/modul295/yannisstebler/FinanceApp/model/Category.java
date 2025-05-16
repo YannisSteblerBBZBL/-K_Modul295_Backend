@@ -19,6 +19,9 @@ public class Category {
     @Column(nullable = false)
     String name;
 
+    @Column(name = "keycloak_username", nullable = false)
+    String keycloak_username;
+
     @Column
     String description;
 }
